@@ -18,6 +18,16 @@ Usage
 =====
 ***
 
+How I Ran the Labs
+-----------------------------
+I'm using a Mac and I'm used to using Visual Studio as my IDE, so these are the steps I followed to run the labs. 
+
+- Log in to the server and clone the original repository.
+- Make sure to install Cmake from Homebrew.
+- cd into build and then run cmake ..
+- To submit a lab (e.g. mp1) cd into build first, then run make mp1 and ctest -R mp1.
+- I moved the tests into the build directory, but I'm not sure if that was necessary. 
+
 On Windows with Visual Studio
 -----------------------------
 
