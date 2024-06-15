@@ -20,13 +20,13 @@ Usage
 
 How I Ran the Labs
 -----------------------------
-I'm using a Mac and I'm used to using Visual Studio as my IDE, so these are the steps I followed to run the labs. 
+I'm using a Mac and I'm used to using Visual Studio as my IDE, so these are the steps I followed to run the labs. I use the Delta GPU remote server.
 
 - Log in to the server and clone the original repository.
-- Make sure to install Cmake from Homebrew.
-- cd into build and then run cmake ..
-- To submit a lab (e.g. mp1) cd into build first, then run make mp1 and ctest -R mp1.
-- I moved the tests into the build directory, but I'm not sure if that was necessary. 
+- Make sure to install Cmake from Homebrew. After installing, cd into build and then run cmake ..
+- To submit a lab (e.g. mp1), start an interactive job first with the following command: srun -A bcsh-delta-gpu --nodes=1 --gpus=1 --partition=gpuA40x4 --time=00:05:00 --pty /bin/bash
+- Then, cd into build first and run make mp1 and ctest -R mp1.
+- I moved the tests into the build directory because that was what worked for me, but I'm not sure if that was necessary. 
 
 On Windows with Visual Studio
 -----------------------------

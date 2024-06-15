@@ -1,4 +1,7 @@
+#include <iostream>
 #include <wb.h>
+
+using namespace std;
 
 #define wbCheck(stmt)                                                          \
   do {                                                                         \
@@ -10,13 +13,16 @@
     }                                                                          \
   } while (0)
 
+// kernel code
 // Compute C = A * B
 __global__ void matrixMultiply(float *A, float *B, float *C, int numARows,
                                int numAColumns, int numBRows, int numBColumns,
                                int numCRows, int numCColumns) {
   //@@ Insert code to implement matrix multiplication here
+
 }
 
+// host code
 int main(int argc, char **argv) {
   wbArg_t args;
   float *hostA; // The A matrix
@@ -40,22 +46,29 @@ int main(int argc, char **argv) {
   hostB =
       ( float * )wbImport(wbArg_getInputFile(args, 1), &numBRows, &numBColumns);
   //@@ Set numCRows and numCColumns
-  numCRows = 0;
-  numCColumns = 0;
+  numCRows = numARows;
+  numCColumns = numBColumns;
   //@@ Allocate the hostC matrix
+  hostC =
+      ( float * )malloc(numCRows * numCColumns * sizeof(float));
   wbTime_stop(Generic, "Importing data and creating memory on host");
-
+  
   wbLog(TRACE, "The dimensions of A are ", numARows, " x ", numAColumns);
   wbLog(TRACE, "The dimensions of B are ", numBRows, " x ", numBColumns);
-
   wbTime_start(GPU, "Allocating GPU memory.");
   //@@ Allocate GPU memory here
-
+  int size_a = numARows * numAColumns * sizeof(float);
+  int size_b = numBRows * numBColumns * sizeof(float);
+  int size_c = numCRows * numCColumns * sizeof(float);
+  cudaMalloc((void **) &deviceA, size_a);
+  cudaMalloc((void **) &deviceB, size_b);
+  cudaMalloc((void **) &deviceC, size_c);
   wbTime_stop(GPU, "Allocating GPU memory.");
 
   wbTime_start(GPU, "Copying input memory to the GPU.");
   //@@ Copy memory to the GPU here
-
+  cudaMemcpy(deviceA, hostA, size_a, cudaMemcpyHostToDevice);
+  cudaMemcpy(deviceB, hostB, size_b, cudaMemcpyHostToDevice);
   wbTime_stop(GPU, "Copying input memory to the GPU.");
 
   //@@ Initialize the grid and block dimensions here

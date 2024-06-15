@@ -1,4 +1,7 @@
-#include	<wb.h>
+#include <iostream>
+#include <wb.h>
+
+using namespace std;
 
 //@@ The purpose of this code is to become familiar with the submission
 //@@ process. Do not worry if you do not understand all the details of
@@ -11,12 +14,16 @@ int main(int argc, char ** argv) {
 
     cudaGetDeviceCount(&deviceCount);
 
+    cout << "Number of CUDA devices: " << deviceCount << endl; // newly added
+
     wbTime_start(GPU, "Getting GPU Data."); //@@ start a timer
 
     for (int dev = 0; dev < deviceCount; dev++) {
         cudaDeviceProp deviceProp;
 
         cudaGetDeviceProperties(&deviceProp, dev);
+
+        wbLog(TRACE, "Device ", dev, " name: ", deviceProp.name); // newly added
 
         if (dev == 0) {
             if (deviceProp.major == 9999 && deviceProp.minor == 9999) {

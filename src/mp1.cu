@@ -1,5 +1,8 @@
 // MP 1
+#include <iostream>
 #include <wb.h>
+
+using namespace std;
 
 // kernel code
 __global__ void vecAdd(float *in1, float *in2, float *out, int len) {
@@ -57,7 +60,7 @@ int main(int argc, char **argv) {
   //@@ Copy the GPU memory back to the CPU here
   cudaMemcpy(hostOutput, deviceOutput, size, cudaMemcpyDeviceToHost);
   wbTime_stop(Copy, "Copying output memory to the CPU");
-
+  
   wbTime_start(GPU, "Freeing GPU Memory");
   //@@ Free the GPU memory here
   cudaFree(deviceInput1);
