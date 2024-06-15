@@ -3,6 +3,19 @@ About
 ***
 
 This **coursera-heterogeneous** project provides offline resources to work on the assignments of [**Heterogenous Parallel Programming**](https://www.coursera.org/course/hetero) course from [**Coursera**](https://www.coursera.org/).
+
+This repository includes the following labs:
+- mp0 - Device Query
+- mp1 - Vector Addition
+- mp2 - Basic Matrix-Matrix Multiplication
+- mp3 - Tiled Matrix-Matrix Multiplication
+- mp4 - List Reduction
+- mp5 - List Scan
+- mp6 - Image Convolution
+- mp7 - Vector Addition (OpenCL)
+- mp11 - Histograms
+- mp12 - Vector Addition with Streams
+
 This is a collaborative effort by the students of the course and you are welcome to [contribute](#contributors) to improve it.
 
 Files available include:
