@@ -2,9 +2,9 @@
 // Given a list (lst) of length n
 // Output its sum = lst[0] + lst[1] + ... + lst[n-1];
 
-#include    <wb.h>
+#include <wb.h>
 
-#define BLOCK_SIZE 512 //@@ You can change this
+#define BLOCK_SIZE 256 //@@ You can change this
 
 #define wbCheck(stmt) do {                                                    \
         cudaError_t err = stmt;                                               \
@@ -15,13 +15,30 @@
         }                                                                     \
     } while(0)
 
-void total(float * input, float * output, int len) {
+// kernel code
+__global__ void total(float * input, float * output, int len) {
     //@@ Load a segment of the input vector into shared memory
+    __shared__ float partialSum[2 * BLOCK_SIZE]; // can't use blockDim.x because it's a runtime variable
+    unsigned int start = 2 * blockDim.x * blockIdx.x;
+
+    if (start + threadIdx.x < len) partialSum[threadIdx.x] = input[start + threadIdx.x];
+    else partialSum[threadIdx.x] = 0;
+
+    if (start + threadIdx.x + blockDim.x < len) partialSum[threadIdx.x + blockDim.x] = input[start + threadIdx.x + blockDim.x];
+    else partialSum[threadIdx.x + blockDim.x] = 0;
+
     //@@ Traverse the reduction tree
-    //@@ Write the computed sum of the block to the output vector at the
-    //@@ correct index
+    for (unsigned int stride = blockDim.x; stride > 0; stride /= 2) {
+        __syncthreads();
+        if (threadIdx.x < stride) partialSum[threadIdx.x] += partialSum[threadIdx.x + stride];
+    }
+    __syncthreads();
+
+    //@@ Write the computed sum of the block to the output vector at the correct index
+    output[blockIdx.x] = partialSum[0];
 }
 
+// host code
 int main(int argc, char ** argv) {
     int ii;
     wbArg_t args;
@@ -42,7 +59,6 @@ int main(int argc, char ** argv) {
         numOutputElements++;
     }
     hostOutput = (float*) malloc(numOutputElements * sizeof(float));
-
     wbTime_stop(Generic, "Importing data and creating memory on host");
 
     wbLog(TRACE, "The number of input elements in the input is ", numInputElements);
@@ -50,24 +66,30 @@ int main(int argc, char ** argv) {
 
     wbTime_start(GPU, "Allocating GPU memory.");
     //@@ Allocate GPU memory here
-
+    int size_input = numInputElements * sizeof(float);
+    int size_output = numOutputElements * sizeof(float);
+    cudaMalloc((void **) &deviceInput, size_input);
+    cudaMalloc((void **) &deviceOutput, size_output);
     wbTime_stop(GPU, "Allocating GPU memory.");
 
     wbTime_start(GPU, "Copying input memory to the GPU.");
     //@@ Copy memory to the GPU here
-
+    cudaMemcpy(deviceInput, hostInput, size_input, cudaMemcpyHostToDevice);
     wbTime_stop(GPU, "Copying input memory to the GPU.");
+
     //@@ Initialize the grid and block dimensions here
+    dim3 DimGrid((numInputElements - 1)/BLOCK_SIZE + 1, 1, 1);
+    dim3 DimBlock(BLOCK_SIZE, 1, 1);
 
     wbTime_start(Compute, "Performing CUDA computation");
     //@@ Launch the GPU Kernel here
-
+    total<<<DimGrid, DimBlock>>>(deviceInput, deviceOutput, numInputElements);
     cudaDeviceSynchronize();
     wbTime_stop(Compute, "Performing CUDA computation");
 
     wbTime_start(Copy, "Copying output memory to the CPU");
     //@@ Copy the GPU memory back to the CPU here
-
+    cudaMemcpy(hostOutput, deviceOutput, size_output, cudaMemcpyDeviceToHost);
     wbTime_stop(Copy, "Copying output memory to the CPU");
 
     /********************************************************************
@@ -82,7 +104,8 @@ int main(int argc, char ** argv) {
 
     wbTime_start(GPU, "Freeing GPU Memory");
     //@@ Free the GPU memory here
-
+    cudaFree(deviceInput);
+    cudaFree(deviceOutput);
     wbTime_stop(GPU, "Freeing GPU Memory");
 
     wbSolution(args, hostOutput, 1);
