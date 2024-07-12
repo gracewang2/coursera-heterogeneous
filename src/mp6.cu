@@ -98,7 +98,6 @@ int main(int argc, char* argv[]) {
     cudaMalloc((void **) &deviceMaskData, maskRows * maskColumns * sizeof(float));
     wbTime_stop(GPU, "Doing GPU memory allocation");
 
-
     wbTime_start(Copy, "Copying data to the GPU");
     cudaMemcpy(deviceInputImageData,
                hostInputImageData,
